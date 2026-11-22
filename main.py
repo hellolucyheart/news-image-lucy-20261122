@@ -59,6 +59,9 @@ def load_checked_poster():
     if not blob.endswith(IEND_TRAILER):
         print("poster is truncated: no IEND chunk", file=sys.stderr)
         sys.exit(1)
+    if b"IDAT" not in blob:
+        print("poster has no image data (IDAT)", file=sys.stderr)
+        sys.exit(1)
     if len(blob) > LIMIT_BYTES:
         print("poster over 1 MiB: %d bytes" % len(blob), file=sys.stderr)
         sys.exit(1)
@@ -90,6 +93,8 @@ def run():
     for city, line in HEADLINES:
         print("%s: %s" % (city, line))
     print("wrote %s (%d bytes, sha256 %s)" % (dest, len(blob), hashlib.sha256(blob).hexdigest()))
+    width, height = struct.unpack(">II", blob[16:24])
+    print("poster is %dx%d pixels" % (width, height))
     return 0
 
 
